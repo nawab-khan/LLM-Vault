@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: llm-fastapi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: llm-fastapi
+  template:
+    metadata:
+      labels:
+        app: llm-fastapi
+    spec:
+      containers:
+      - name: fastapi
+        image: llm-fastapi:latest        # built into Minikube’s Docker
+        imagePullPolicy: IfNotPresent
+        command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+        ports:
+        - containerPort: 8000
+        env:
+        - name: GROQ_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: groq-api-key
+              key: GROQ_API_KEY
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "200m"
+            memory: "256Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: llm-fastapi
+spec:
+  selector:
+    app: llm-fastapi
+  ports:
+  - port: 8000
+    targetPort: 8000

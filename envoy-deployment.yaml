@@ -1,0 +1,57 @@
+# Deployment for Envoy
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: envoy-gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: envoy-gateway
+  template:
+    metadata:
+      labels:
+        app: envoy-gateway
+    spec:
+      containers:
+      - name: envoy
+        image: envoyproxy/envoy:v1.29-latest
+        imagePullPolicy: IfNotPresent
+        args:
+        - "-c"
+        - "/etc/envoy/envoy.yaml"
+        - "--service-node"
+        - "gateway"
+        - "--service-cluster"
+        - "gateway"
+        ports:
+        - containerPort: 8081
+        - containerPort: 9901
+        volumeMounts:
+        - name: envoy-config
+          mountPath: /etc/envoy/envoy.yaml
+          subPath: envoy.yaml
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "200m"
+            memory: "256Mi"
+      volumes:
+      - name: envoy-config
+        configMap:
+          name: envoy-config
+
+---
+# Service for Envoy
+apiVersion: v1
+kind: Service
+metadata:
+  name: envoy-gateway
+spec:
+  selector:
+    app: envoy-gateway
+  ports:
+  - port: 8081
+    targetPort: 8081
