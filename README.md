@@ -132,6 +132,7 @@ With port-forward active, use your Auth0 JWT:
 ```
 ├── app/                      # FastAPI application code
 │   ├── main.py
+│   ├── auth.py
 │   └── routes/predict.py     # Models and predict endpoints
 ├── Dockerfile                # Builds FastAPI container
 ├── requirements.txt          # Python dependencies
